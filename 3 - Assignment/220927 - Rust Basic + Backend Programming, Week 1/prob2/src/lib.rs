@@ -8,10 +8,98 @@ pub enum CalculatorInput {
 }
 
 pub fn evaluate(inputs: &[CalculatorInput]) -> Option<i32> {
-    unimplemented!(
-		"Given the inputs: {:?}, evaluate them as though they were a Reverse Polish notation expression",
-		inputs,
-	);
+    let mut result: Option<i32> = None;
+    let mut stack: Vec<CalculatorInput> = Vec::new();
+    let mut is_valid_calculation: bool = true;
+    for input in inputs {
+        let value: Option<i32> = match input {
+            CalculatorInput::Add => calculation_add(&mut stack),
+            CalculatorInput::Subtract => calculation_subtract(&mut stack),
+            CalculatorInput::Multiply => calculation_multiply(&mut stack),
+            CalculatorInput::Divide => calculation_divide(&mut stack),
+            CalculatorInput::Value(number) => Some(number.clone()),
+        };
+        if value.is_some() {
+            stack.push(CalculatorInput::Value(value.unwrap()));
+        } else {
+            is_valid_calculation = false;
+            break;
+        }
+    }
+    if stack.len() != 1 {
+        is_valid_calculation = false;
+    }
+    if is_valid_calculation {
+        match stack.pop() {
+            Some(CalculatorInput::Value(number)) => result = Some(number),
+            _ => result = None,
+        }
+    }
+    return result;
+}
+
+pub fn calculation_add(stack: &mut Vec<CalculatorInput>) -> Option<i32> {
+    let mut result: Option<i32> = None;
+    let right_hand_side = match stack.pop() {
+        Some(CalculatorInput::Value(number)) => Some(number),
+        _ => None,
+    };
+    let left_hand_side = match stack.pop() {
+        Some(CalculatorInput::Value(number)) => Some(number),
+        _ => None,
+    };
+    if left_hand_side.is_some() && right_hand_side.is_some() {
+        result = Some(left_hand_side.unwrap() + right_hand_side.unwrap());
+    }
+    return result;
+}
+
+pub fn calculation_subtract(stack: &mut Vec<CalculatorInput>) -> Option<i32> {
+    let mut result: Option<i32> = None;
+    let right_hand_side = match stack.pop() {
+        Some(CalculatorInput::Value(number)) => Some(number),
+        _ => None,
+    };
+    let left_hand_side = match stack.pop() {
+        Some(CalculatorInput::Value(number)) => Some(number),
+        _ => None,
+    };
+    if left_hand_side.is_some() && right_hand_side.is_some() {
+        result = Some(left_hand_side.unwrap() - right_hand_side.unwrap());
+    }
+    return result;
+}
+
+pub fn calculation_multiply(stack: &mut Vec<CalculatorInput>) -> Option<i32> {
+    let mut result: Option<i32> = None;
+    let right_hand_side = match stack.pop() {
+        Some(CalculatorInput::Value(number)) => Some(number),
+        _ => None,
+    };
+    let left_hand_side = match stack.pop() {
+        Some(CalculatorInput::Value(number)) => Some(number),
+        _ => None,
+    };
+    if left_hand_side.is_some() && right_hand_side.is_some() {
+        result = Some(left_hand_side.unwrap() * right_hand_side.unwrap());
+    }
+    return result;
+}
+
+pub fn calculation_divide(stack: &mut Vec<CalculatorInput>) -> Option<i32> {
+    let mut result: Option<i32> = None;
+    let right_hand_side = match stack.pop() {
+        Some(CalculatorInput::Value(number)) => Some(number),
+        _ => None,
+    };
+    let left_hand_side = match stack.pop() {
+        Some(CalculatorInput::Value(number)) => Some(number),
+        _ => None,
+    };
+    if left_hand_side.is_some() && right_hand_side.is_some() {
+        result = Some(left_hand_side.unwrap() / right_hand_side.unwrap());
+    }
+    return result;
 }
 
 #[cfg(test)]
