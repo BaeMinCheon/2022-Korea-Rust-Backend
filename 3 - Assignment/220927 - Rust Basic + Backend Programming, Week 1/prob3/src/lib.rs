@@ -1,5 +1,62 @@
 pub fn annotate(minefield: &[&str]) -> Vec<String> {
-    unimplemented!("\nAnnotate each square of the given minefield with the number of mines that surround said square (blank if there are no surrounding mines):\n{:#?}\n", minefield);
+    let mut result: Vec<Vec<char>> = Vec::new();
+    for line in minefield {
+        let mut vector: Vec<char> = Vec::new();
+        for point in line.chars() {
+            vector.push(point);
+        }
+        result.push(vector);
+    }
+    {
+        let mut row = 0;
+        for line in minefield {
+            let mut col = 0;
+            for point in line.chars() {
+                if point == '*' {
+                    raise_count_nearby(&mut result, row, col);
+                }
+                col += 1;
+            }
+            row += 1;
+        }
+    }
+    let mut output: Vec<String> = Vec::new();
+    for line in result {
+        let mut string = String::new();
+        for point in line {
+            string.push(point);
+        }
+        output.push(string);
+    }
+    return output;
+}
+
+pub fn raise_count_nearby(field: &mut Vec<Vec<char>>, row: usize, col: usize) {
+    let height = field.len();
+    let width = match field.last() {
+        Some(string) => string.len(),
+        _ => 0,
+    };
+    let directions: Vec<(i32, i32)> = vec![(-1, -1), (-1, 0), (-1, 1), (0, -1), (0, 1), (1, -1), (1, 0), (1, 1)];
+    for direction in directions {
+        let target_row = row as i32 + direction.0;
+        let is_row_valid = (0 <= target_row) && (target_row < height as i32);
+        let target_col = col as i32 + direction.1;
+        let is_col_valid = (0 <= target_col) && (target_col < width as i32);
+        if is_row_valid && is_col_valid {
+            let point = match field[target_row as usize][target_col as usize] {
+                '*' => '*',
+                ' ' => '1',
+                etc => {
+                    let digit: i32 = etc.to_string().parse().unwrap();
+                    let character = (digit + 1).to_string().chars().nth(0).unwrap();
+                    character
+                },
+                _ => ' ',
+            };
+            field[target_row as usize][target_col as usize] = point;
+        }
+    }
 }
 
 #[cfg(test)]
