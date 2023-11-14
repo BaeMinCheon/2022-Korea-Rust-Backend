@@ -1,11 +1,85 @@
+
+use num_bigint::BigInt;
+use num_bigint::Sign;
+
 /// Type implementing arbitrary-precision decimal arithmetic
+#[derive(Debug)]
 pub struct Decimal {
-    // implement your type here
+    fraction: BigInt,
+    decimal_power: BigInt,
 }
 
 impl Decimal {
     pub fn try_from(input: &str) -> Option<Decimal> {
-        unimplemented!("Create a new decimal with a value of {}", input)
+        let splits: Vec<&str> = input.split('.').collect();
+        let fraction = splits.clone().join("");
+        let decimal_number = match splits.get(1) {
+            Some(decimal_part) => decimal_part.len(),
+            None => 0,
+        };
+        Some(
+            Decimal {
+                fraction: BigInt::parse_bytes(fraction.as_bytes(), 10).unwrap(),
+                decimal_power: BigInt::from(10).pow(decimal_number as u32),
+            }
+        )
+    }
+}
+
+impl std::ops::Add for Decimal {
+    type Output = Self;
+    fn add(self, other: Self) -> Self::Output {
+        Decimal {
+            fraction: self.fraction * other.decimal_power.clone() + other.fraction * self.decimal_power.clone(),
+            decimal_power: self.decimal_power * other.decimal_power,
+        }
+    }
+}
+
+impl std::ops::Sub for Decimal {
+    type Output = Self;
+    fn sub(self, other: Self) -> Self::Output {
+        Decimal {
+            fraction: self.fraction * other.decimal_power.clone() - other.fraction * self.decimal_power.clone(),
+            decimal_power: self.decimal_power * other.decimal_power,
+        }
+    }
+}
+
+impl std::ops::Mul for Decimal {
+    type Output = Self;
+    fn mul(self, other: Self) -> Self::Output {
+        Decimal {
+            fraction: self.fraction * other.fraction,
+            decimal_power: self.decimal_power * other.decimal_power,
+        }
+    }
+}
+
+impl PartialEq for Decimal {
+    fn eq(&self, other: &Self) -> bool {
+        self.fraction.clone() * other.decimal_power.clone() == other.fraction.clone() * self.decimal_power.clone()
+    }
+    fn ne(&self, other: &Self) -> bool {
+        self.fraction.clone() * other.decimal_power.clone() != other.fraction.clone() * self.decimal_power.clone()
+    }
+}
+
+impl PartialOrd for Decimal {
+    fn ge(&self, other: &Self) -> bool {
+        self.fraction.clone() * other.decimal_power.clone() >= other.fraction.clone() * self.decimal_power.clone()
+    }
+    fn gt(&self, other: &Self) -> bool {
+        self.fraction.clone() * other.decimal_power.clone() > other.fraction.clone() * self.decimal_power.clone()
+    }
+    fn le(&self, other: &Self) -> bool {
+        self.fraction.clone() * other.decimal_power.clone() <= other.fraction.clone() * self.decimal_power.clone()
+    }
+    fn lt(&self, other: &Self) -> bool {
+        self.fraction.clone() * other.decimal_power.clone() < other.fraction.clone() * self.decimal_power.clone()
+    }
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        (self.fraction.clone() * other.decimal_power.clone()).partial_cmp(&(other.fraction.clone() * self.decimal_power.clone()))
     }
 }
 
